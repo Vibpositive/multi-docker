@@ -1,0 +1,19 @@
+sudo: required
+services:
+  - docker
+before_install:
+  -docker build -t vibpositive/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run vibpositive/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t vibpositive/multi-client ./client
+  - docker build -t vibpositive/multi-nginx ./nginx
+  - docker build -t vibpositive/multi-server ./server
+  - docker build -t vibpositive/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push vibpositive/multi-client
+  - docker push vibpositive/multi-nginx
+  - docker push vibpositive/multi-server
+  - docker push vibpositive/multi-worker
